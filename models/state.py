@@ -6,7 +6,8 @@ from sqlalchemy.orm import relationship
 
 from file_storage import FileStorage
 from city import City
-
+import os
+import models
 
 class State(BaseModel, Base):
     """ State class """
