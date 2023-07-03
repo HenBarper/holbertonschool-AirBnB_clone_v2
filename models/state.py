@@ -12,14 +12,17 @@ class State(BaseModel, Base):
     """ State class """
     __tablename__ = 'states'
     name = Column(String(128), nullable=False)
-    cities = relationship('City', backref='state',
-                          cascade='all, delete, delete-orphan')
-    # for FileStorage: getter attribute cities that returns the list of
-    # City instances with state_id equals to the current State.id => It
-    # will be the FileStorage relationship between State and City
 
-    def cities(self):
-        """Retrieve cities with state_id 
-           equals to the current State.id"""
-        return FileStorage.get_instances_by_attribute(City, 'state_id',
-                                                      self.id)
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        cities = relationship("City", backref="state",
+                              cascade="all, delete-orphan")
+
+    else:
+        @property
+        def cities(self):
+            """Returns a list of City instances with state_id = id"""
+            cities = []
+            for thing in models.storage.all(City).values():
+                if thing.state_id == self.id:
+                    cities.append(thing)
+            return cities
