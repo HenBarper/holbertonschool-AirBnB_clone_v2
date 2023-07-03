@@ -23,12 +23,16 @@ class BaseModel:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
-            storage.new(self)
         else:
             kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
                                                      '%Y-%m-%dT%H:%M:%S.%f')
             kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
                                                      '%Y-%m-%dT%H:%M:%S.%f')
+
+            for key, value in kwargs.items():
+                if not hasattr(self, key):
+                    setattr(self, key, value)
+
             del kwargs['__class__']
             self.__dict__.update(kwargs)
 
@@ -41,30 +45,25 @@ class BaseModel:
         """Updates updated_at with current time when instance is changed"""
         from models import storage
         self.updated_at = datetime.now()
+        storage.new(self)
         storage.save()
 
     def to_dict(self):
         """Convert instance into dict format"""
-        dictionary = {}
-        """
-        Update to_dict() method of the class BaseModel:
-        remove the key _sa_instance_state from the dictionary returned by this
-        method only if this key exists
-        its a tuple so it needs a comma right?? <-- check that
-        """
-        buff_dictionary = {}
-        if "sa_instance_state" in buff_dictionary:
-            del buff_dictionary["_sa_instance_state", ]
+        dictionary = self.__dict__.copy()
+        dictionary.pop('_sa_instance_state', None)
 
-        dictionary.update(self.__dict__)
-        dictionary.update({'__class__':
-                          (str(type(self)).split('.')[-1]).split('\'')[0]})
-        dictionary['created_at'] = self.created_at.isoformat()
-        dictionary['updated_at'] = self.updated_at.isoformat()
+        dictionary.update({
+            '__class__': self.__class__.__name__,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        })
         return dictionary
 
     """is this not how you reference that stuff??"""
     """                       FIX THIS <-------------!@!!"""
     """THIS SEEMS WRONG"""
     def delete(self):
-        self.storage.delete(self)
+        """Delete that stuff"""
+        from models import storage
+        storage.delete(self)
