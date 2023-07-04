@@ -60,9 +60,6 @@ class BaseModel:
         })
         return dictionary
 
-    """is this not how you reference that stuff??"""
-    """                       FIX THIS <-------------!@!!"""
-    """THIS SEEMS WRONG"""
     def delete(self):
         """Delete that stuff"""
         from models import storage
