@@ -4,8 +4,8 @@ from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from file_storage import FileStorage
-from city import City
+from models.engine.file_storage import FileStorage
+from models.city import City
 import os
 import models
 
