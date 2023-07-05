@@ -119,38 +119,38 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
         else:
-            args = args.split()
+            args_list = args.split()
 
-        class_name = args[0]
+        class_name = args_list[0]
         if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-
+        """creating instance"""
         new_instance = HBNBCommand.classes[class_name]()
-
-        for arg in args[1:]:
-            if "=" not in arg:
-                continue
-
-            key, value = arg.split("=")
-            value = value.replace('_', ' ')
-
-            if value[0] == '"' and value[-1] == '"':
-                value = value[1:-1]
-            elif '.' in value:
-                try:
-                    value = float(value)
-                except ValueError:
+        """spliting parameters"""
+        if len(args_list) > 1:
+            for param in args_list[1:]:
+                if "=" not in param:
                     continue
-            else:
-                try:
-                    value = int(value)
-                except ValueError:
-                    continue
+                key, value = param.split('=', 2)
+                value = value.replace("_", " ")
+                if value[0] == '"' and value[-1] == '"':
+                    # tests if value is a string
+                    value = value[1:-1]  # takes out quotes
+                elif value.find(".") != -1:  # tests if value if a float
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        continue
+                else:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        continue
 
-            setattr(new_instance, key, value)
+                setattr(new_instance, key, value)
 
-        new_instance.save()
+        storage.save()
         print(new_instance.id)
         storage.save()
 
@@ -215,7 +215,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del(storage.all()[key])
+            del (storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")
@@ -292,7 +292,7 @@ class HBNBCommand(cmd.Cmd):
             return
 
         # first determine if kwargs or args
-        if '{' in args[2] and '}' in args[2] and type(eval(args[2])) is dict:
+        if '{' in args[2] and '}' in args[2] and type(eval(args[2])) == dict:
             kwargs = eval(args[2])
             args = []  # reformat kwargs into list, ex: [<name>, <value>, ...]
             for k, v in kwargs.items():
