@@ -62,3 +62,6 @@
 * read a string from a file on disk
 * convert this string to a data structure. This string is a JSON representation, so it’s easy to convert - for us it will be a my_dict = JSON.loads(my_string)
 * convert this data structure to instance - for us it will be a my_instance = MyObject(my_dict)
+
+# Data Diagram
+![Alt text](data_diagram.png)
