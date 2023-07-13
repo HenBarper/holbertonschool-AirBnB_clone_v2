@@ -52,3 +52,13 @@
 * Provide easy class description: everybody will be able to see quickly what a model should contain (which attributes, etc…)
 * Provide default value of any attribute
 * In the future, provide the same model behavior for file storage or database storage
+
+## File Storage == JSON serialization
+* For this first step, you have to write in a file all your objects/instances created/updated in your command interpreter and restore them when you start it. You can’t store and restore a Python instance of a class as “Bytes”, the only way is to convert it to a serializable data structure: convert an instance to Python built in serializable data structure (list, dict, number and string) - for us it will be the method my_instance.to_json() to retrieve a dictionary convert this data structure to a string (JSON format, but it can be YAML, XML, CSV…) - for us it will be a my_string = JSON.dumps(my_dict) write this string to a file on disk
+* And the process of deserialization?
+
+### The same but in the other way:
+
+* read a string from a file on disk
+* convert this string to a data structure. This string is a JSON representation, so it’s easy to convert - for us it will be a my_dict = JSON.loads(my_string)
+* convert this data structure to instance - for us it will be a my_instance = MyObject(my_dict)
