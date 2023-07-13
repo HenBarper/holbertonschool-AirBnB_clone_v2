@@ -43,7 +43,7 @@ def is_cool(text='is cool'):
 
 @app.route('/number/int:<n>', strict_slashes=False)
 def display_number_n(n):
-        return ("{} is a number".format(n))
+        return (f"{n} is a number")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
