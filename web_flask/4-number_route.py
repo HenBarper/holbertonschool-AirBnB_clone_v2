@@ -41,7 +41,7 @@ def is_cool(text='is cool'):
     return is_cool_string
 
 
-@app.route('/number/<n>', strict_slashes=False)
+@app.route('/number/int:<n>', strict_slashes=False)
 def display_number_n(n):
     if isinstance(n, int):
         return (f'{n} is a number')
