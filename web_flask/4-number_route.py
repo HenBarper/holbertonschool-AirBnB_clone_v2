@@ -43,7 +43,7 @@ def is_cool(text='is cool'):
 
 @app.route('/number/<n>', strict_slashes=False)
 def display_number_n(n):
-    if isinstance(n, int):
+    if isinstance('n', int):
         return '{} is a number'.format(n)
 
 if __name__ == '__main__':
