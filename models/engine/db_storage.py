@@ -1,91 +1,72 @@
 #!/usr/bin/python3
-"""New engine DBStorage: (models/engine/db_storage.py)"""
-
-import os
-from sqlalchemy import create_engine
+from os import getenv
+from sqlalchemy import create_engine, inspect, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
-from models.base_model import Base
-from models.amenity import Amenity
-from models.city import City
-from models.place import Place
-from models.state import State
-from models.review import Review
-from models.user import User
-the_classes = {
-    'Amenity': Amenity,
-    'City': City,
-    'Place': Place,
-    'State': State,
-    'Review': Review,
-    'User': User
-}
+from models.base_model import Base, BaseModel
+from models import city, place, review, state, amenity, user
 
 
 class DBStorage:
-    """private class attributes"""
     __engine = None
     __session = None
+    CDIC = {
+        'City': city.City,
+        'Place': place.Place,
+        'Review': review.Review,
+        'State': state.State,
+        'Amenity': amenity.Amenity,
+        'User': user.User
+    }
 
-    """the all important __init__ *bows head*"""
     def __init__(self):
-        """link to the user, data retrieved from environment variables"""
-        user = os.getenv('HBNB_MYSQL_USER')
-        passwd = os.getenv('HBNB_MYSQL_PWD')
-        host = os.getenv('HBNB_MYSQL_HOST')
-        database = os.getenv('HBNB_MYSQL_DB')
-        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'
-                                      .format(user, passwd, host, database))
-        if os.getenv('HBNB_ENV') == 'test':
-            Base.metadata.drop_all(self.__engine)
+        self.__engine = create_engine("mysql+mysqldb://{}:{}@{}/{}".format(
+                                            getenv('HBNB_MYSQL_USER'),
+                                            getenv('HBNB_MYSQL_PWD'),
+                                            getenv('HBNB_MYSQL_HOST'),
+                                            getenv('HBNB_MYSQL_DB')),
+                                      pool_pre_ping=True)
 
-    def all(self, cls=None):
-        """return all objects in a dict"""
-        if not self.__session:
-            self.reload()
-        objects = {}
-        if type(cls) == str:
-            cls = the_classes.get(cls, None)
-        if cls:
-            for obj in self.__session.query(cls):
-                objects[obj.__class__.__name__ + '.' + obj.id] = obj
-        else:
-            for cls in the_classes.values():
-                for obj in self.__session.query(cls):
-                    objects[obj.__class__.__name__ + '.' + obj.id] = obj
-        return objects
+    def reload(self):
+        Base.metadata.create_all(self.__engine)
+        the_session = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        Session = scoped_session(the_session)
+        self.__session = Session()
 
-    """The easy stuff"""
     def new(self, obj):
         self.__session.add(obj)
 
-    def close(self):
-        """Close db storage"""
-        self.__session.remove()
-
-    def get(self, cls, id):
-        """Retrieve an object"""
-        if cls is not None and type(cls) is str and id is not None and\
-           type(id) is str and cls in the_classes:
-            cls = the_classes[cls]
-            result = self.__session.query(cls).filter(cls.id == id).first()
-            return result
-        else:
-            return None
-
     def save(self):
-        """save the session"""
         self.__session.commit()
 
     def delete(self, obj=None):
-        """delete object"""
-        if not self.__session:
-            self.reload()
-        if obj:
+        if obj is not None:
             self.__session.delete(obj)
 
-    def reload(self):
-        """reload the session"""
-        session_factory = sessionmaker(bind=self.__engine,
-                                       expire_on_commit=False)
-        Base.metadata.create_all(self.__engine)
-        self.__session = scoped_session(session_factory)
+    def all(self, cls=None):
+        obj_dct = {}
+        qry = []
+        if cls is None:
+            for cls_typ in DBStorage.CDIC.values():
+                qry.extend(self.__session.query(cls_typ).all())
+        else:
+            if cls in self.CDIC.keys():
+                cls = self.CDIC.get(cls)
+            qry = self.__session.query(cls)
+        for obj in qry:
+            obj_key = "{}.{}".format(type(obj).__name__, obj.id)
+            obj_dct[obj_key] = obj
+        return obj_dct
+
+    def gettables(self):
+        inspector = inspect(self.__engine)
+        return inspector.get_table_names()
+
+    def close(self):
+        self.__session.close()
+
+    def hcf(self, cls):
+        metadata = MetaData()
+        metadata.reflect(bind=self.__engine)
+        table = metadata.tables.get(cls.__tablename__)
+        self.__session.execute(table.delete())
+        self.save()
