@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""This module defines a class to manage file storage for hbnb clone"""
+"""defines a class to manage file storage for hbnb clone"""
 import json
 from models import city, place, review, state, amenity, user, base_model
 
@@ -18,8 +18,8 @@ class FileStorage:
     }
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage
-        if cls specified, only returns that class"""
+        """returns dict of models in storage
+        if cls specified returns that class"""
         if cls is not None:
             if cls in self.CDIC.keys():
                 cls = self.CDIC.get(cls)
@@ -31,11 +31,11 @@ class FileStorage:
         return self.__objects
 
     def new(self, obj):
-        """Adds new object to storage dictionary"""
+        """adds new object to storage dict"""
         self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
 
     def save(self):
-        """Saves storage dictionary to file"""
+        """saves storage dict to file"""
         with open(FileStorage.__file_path, 'w') as f:
             temp = {}
             temp.update(FileStorage.__objects)
@@ -44,7 +44,7 @@ class FileStorage:
             json.dump(temp, f)
 
     def reload(self):
-        """Loads storage dictionary from file"""
+        """loads storage dict from file"""
         from models.base_model import BaseModel
         from models.user import User
         from models.place import Place
