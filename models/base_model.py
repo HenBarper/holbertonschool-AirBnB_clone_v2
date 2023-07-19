@@ -57,15 +57,15 @@ class BaseModel:
     def to_dict(self):
         """returns BaseModel dictionary"""
         cls_nam = self.__class__.__name__
-        richard = {
+        new_dict = {
             k: v if type(v) == str else str(v)
             for k, v in self.__dict__.items()
         }
-        richard.update({
+        new_dict.update({
             '__class__': cls_nam
             })
-        richard.pop("_sa_instance_state", None)
-        return richard
+        new_dict.pop("_sa_instance_state", None)
+        return new_dict
 
     def delete(self):
         """deletes basemodel in storage"""
